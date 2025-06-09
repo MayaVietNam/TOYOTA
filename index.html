@@ -162,7 +162,7 @@
       });
     }
 
-    // SweetAlert2 thank you
+    // SweetAlert2 thank you (KHÔNG chuyển trang)
     function swalThankYou() {
       Swal.fire({
         icon: 'success',
@@ -172,10 +172,8 @@
           Xin trân trọng cảm ơn Quý khách!<br>
           <span class="label-en">Your request has been successfully submitted!<br>Thank you very much!</span>
         </div>`,
-        confirmButtonText: 'Trở về trang chủ / Back to Home',
+        confirmButtonText: 'Đóng',
         customClass: { popup: 'px-4 py-8' }
-      }).then(() => {
-        window.location.href = '/thank-you.html';
       });
     }
 
@@ -329,9 +327,13 @@
           return;
         }
 
-        // Show loading
-        swalLoading();
+        // Hiện loading spinner trên nút
+        submitText.classList.add('hidden');
+        loadingSpinner.classList.remove('hidden');
         submitFormBtn.disabled = true;
+
+        // Show SweetAlert2 loading
+        swalLoading();
 
         // Gather data
         const rentalRequestsContainer = document.getElementById('rental-requests-container');
@@ -369,6 +371,12 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)
           });
+          // Ẩn loading nút
+          submitText.classList.remove('hidden');
+          loadingSpinner.classList.add('hidden');
+          submitFormBtn.disabled = false;
+          // Cảm ơn
+          Swal.close(); // Đóng loading SweetAlert
           swalThankYou();
           setTimeout(() => {
             document.getElementById('rental-requests-container').innerHTML = '';
@@ -381,9 +389,11 @@
             focusFirstInput();
           }, 1000);
         } catch (error) {
-          Swal.fire({icon: 'error', title: 'Có lỗi xảy ra!', text: 'Vui lòng thử lại. / An error occurred. Please try again.'});
-        } finally {
+          submitText.classList.remove('hidden');
+          loadingSpinner.classList.add('hidden');
           submitFormBtn.disabled = false;
+          Swal.close();
+          Swal.fire({icon: 'error', title: 'Có lỗi xảy ra!', text: 'Vui lòng thử lại. / An error occurred. Please try again.'});
         }
       });
     });
