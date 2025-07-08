@@ -1,474 +1,465 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Phản hồi dịch vụ WiFi - MAYA VIETNAM</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <!-- SCRIPT CỦA GOOGLE RECAPTCHA -->
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-  <style>
-    .star-rating { display: flex; flex-direction: row-reverse; justify-content: center; gap: 0.25rem; }
-    .star-rating input[type="radio"] { display: none; }
-    .star-rating label { font-size: 2.5rem; color: #d1d5db; cursor: pointer; transition: color 0.2s; }
-    .star-rating label:hover, .star-rating label:hover ~ label, .star-rating input[type="radio"]:checked ~ label { color: #f59e0b; }
-    .lang-btn { transition: all 0.2s; }
-    .lang-btn.active { background-color: #2563eb; color: white; font-weight: bold; }
-    /* Căn giữa hộp reCAPTCHA */
-    .g-recaptcha { display: flex; justify-content: center; }
-  </style>
+    <meta charset="UTF-8">
+    <title>ĐƠN ĐĂNG KÝ THUÊ THIẾT BỊ WIFI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <!-- Nhớ đặt file price-table.js cùng thư mục -->
+    <script src="price-table.js"></script>
+    <style>
+        html, body { height: 100%; margin: 0; padding: 0; min-height: 100vh; }
+        body {
+            background: #e5eefb; min-height: 100vh; position: relative; box-sizing: border-box; overflow-x: hidden;
+        }
+        .bg-logo-bg {
+            pointer-events: none; position: fixed; z-index: 0; left: 0; top: 0; width: 100vw; height: 100vh; overflow: hidden;
+        }
+        .bg-logo-bg-inner {
+            position: absolute; left: 50%; top: 50%; width: 200vw; height: 200vh;
+            transform: translate(-50%, -50%) rotate(-10deg);
+            background-image: url('https://i.postimg.cc/yd4v4YHG/EZ-LOGO-31.png');
+            background-repeat: repeat; background-size: 120px auto; opacity: 0.07; will-change: transform;
+        }
+        .logo-on-top { display: flex; justify-content: center; margin-bottom: 0.7rem; position: relative; z-index: 2; }
+        .logo-on-top img { height: 56px; width: auto; opacity: 0.96; }
+        .form-container {
+            background: #fff; border-radius: 16px; box-shadow: 0 2px 10px 0 rgba(0,0,0,0.06);
+            border: 1px solid #bee3f8; padding: 2rem; position: relative; z-index: 3;
+        }
+        .label-en { font-size:0.98em; color:#2563eb; font-weight: 500; display:block; margin-bottom:0.16em; margin-top:0.05em; letter-spacing: 0.01em; }
+        .price-info-highlight { background: #fef2f2; color: #b91c1c; font-weight: bold; border-radius: 5px; padding: 0.3em 0.7em; margin-top: 5px; display: inline-block; }
+        .footer-company-info {
+            font-size: 0.95em;
+            background: linear-gradient(90deg, #fbeff0 0%, #dbeafe 100%);
+            color: #0c2245;
+            border-radius: 10px 10px 0 0;
+            box-shadow: 0 0 8px 0 #0002;
+            padding: 0.7rem 1.1rem 0.8rem 1.1rem;
+            margin: 2.2rem auto 0 auto;
+            text-align: center;
+            max-width: 600px;
+            border-top: 3px solid #da1a32;
+            border-left: 1.5px solid #c7e0fb;
+            border-right: 1.5px solid #c7e0fb;
+        }
+        .footer-company-info h2 {
+            font-size: 1.18rem;
+            font-weight: bold;
+            color: #da1a32;
+            margin-bottom: 0.12rem;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+        .footer-company-info .en { color: #2563eb; font-weight: 500; font-size: 0.98em; margin-bottom: 0.2em; letter-spacing: 0.01em; }
+        .footer-company-info .line { font-size: 1em; margin-bottom: 2px;}
+        .footer-company-info .label { font-weight: 600; }
+        @media (max-width: 520px) {
+            .form-container, .footer-company-info { padding: 1.25rem !important; border-radius: 8px; }
+            .footer-company-info { font-size: 0.89em; }
+        }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans">
-  <!-- BỘ CHUYỂN ĐỔI NGÔN NGỮ -->
-  <div class="max-w-2xl mx-auto mt-4 text-right pr-4">
-    <div class="inline-flex rounded-md shadow-sm" role="group">
-      <button type="button" id="lang-vi" class="lang-btn px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-l-lg hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-blue-700">VI</button>
-      <button type="button" id="lang-en" class="lang-btn px-4 py-2 text-sm font-medium text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-blue-700">EN</button>
-      <button type="button" id="lang-ja" class="lang-btn px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-r-md hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-blue-700">JA</button>
+<body class="p-4 sm:p-8">
+    <div class="bg-logo-bg"><div class="bg-logo-bg-inner"></div></div>
+    <div class="logo-on-top">
+        <img src="https://i.postimg.cc/VvSyGkBV/EZ-LOGO-08.png" alt="EZ Maya Logo">
     </div>
-  </div>
+    <main>
+        <div class="form-container max-w-3xl mx-auto mt-2">
+            <h1 class="text-3xl font-extrabold text-center text-blue-900 mb-6 tracking-widest uppercase">
+                ĐƠN ĐĂNG KÝ THUÊ THIẾT BỊ WIFI
+                <br>
+                <span class="text-lg font-bold label-en uppercase">WIFI DEVICE RENTAL REGISTRATION FORM</span>
+            </h1>
+            <form id="wifi-form" autocomplete="on" novalidate>
+                <!-- Thông tin người gửi -->
+                <div class="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-blue-800 text-sm font-semibold mb-2">
+                            Họ tên người gửi <span class="label-en">Sender's Name</span>
+                        </label>
+                        <input type="text" id="sender-name" name="sender-name" class="w-full px-4 py-2 border border-blue-300 rounded-lg text-blue-900" required>
+                    </div>
+                    <div>
+                        <label class="block text-blue-800 text-sm font-semibold mb-2">
+                            Email <span class="label-en">Email</span>
+                        </label>
+                        <input type="email" id="sender-email" name="sender-email" class="w-full px-4 py-2 border border-blue-300 rounded-lg text-blue-900" required>
+                    </div>
+                    <div>
+                        <label class="block text-blue-800 text-sm font-semibold mb-2">
+                            Số điện thoại <span class="label-en">Phone Number</span>
+                        </label>
+                        <input type="tel" id="sender-phone" name="sender-phone" class="w-full px-4 py-2 border border-blue-300 rounded-lg text-blue-900" required>
+                    </div>
+                    <div>
+                        <label class="block text-blue-800 text-sm font-semibold mb-2">
+                            Công ty <span class="label-en">Company</span>
+                        </label>
+                        <input type="text" id="sender-company" name="sender-company" class="w-full px-4 py-2 border border-blue-300 rounded-lg text-blue-900">
+                    </div>
+                    <div>
+                        <label class="block text-blue-800 text-sm font-semibold mb-2">
+                            Khu vực <span class="label-en">Region</span>
+                        </label>
+                        <select id="sender-region" name="sender-region" class="w-full px-4 py-2 border border-blue-300 rounded-lg text-blue-900" required>
+                            <option value="">-- Chọn khu vực --</option>
+                            <option value="HNO">HNO</option>
+                            <option value="HQ">HQ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-blue-800 text-sm font-semibold mb-2">
+                            Mã số thuế <span class="label-en">Tax Code</span>
+                        </label>
+                        <input type="text" id="sender-taxcode" name="sender-taxcode" class="w-full px-4 py-2 border border-blue-300 rounded-lg text-blue-900">
+                    </div>
+                </div>
 
-  <div class="max-w-2xl mx-auto mt-2 mb-8 p-6 sm:p-8 bg-white rounded-xl shadow-lg">
-    <div class="text-center mb-6">
-      <img src="https://i.postimg.cc/yd4v4YHG/EZ-LOGO-31.png" alt="Logo Công ty" class="h-20 mx-auto mb-3">
-      <h2 class="text-2xl font-bold text-blue-600" data-lang-key="title">Khảo sát mức độ hài lòng</h2>
-      <p class="text-sm text-gray-500" data-lang-key="subtitle">Cảm ơn quý khách đã sử dụng dịch vụ cho thuê WiFi của chúng tôi!</p>
-    </div>
-
-    <form id="feedbackForm" class="space-y-6">
-      <!-- CÁC TRƯỜNG NHẬP LIỆU -->
-      <div>
-        <label for="email" class="block font-medium text-gray-700" data-lang-key="email_label">Email của bạn</label>
-        <input type="email" id="email" name="email" required class="w-full p-3 border border-gray-300 rounded-lg mt-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" data-lang-key="email_placeholder" placeholder="vidu@email.com">
-      </div>
-      
-      <div>
-        <label for="usage_area" class="block font-medium text-gray-700" data-lang-key="usage_area_label">Quý khách đã sử dụng dịch vụ tại quốc gia nào?</label>
-        <input type="text" id="usage_area" name="usage_area" required class="w-full p-3 border border-gray-300 rounded-lg mt-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" data-lang-key="usage_area_placeholder" placeholder="Ví dụ: Nhật Bản, Hàn Quốc...">
-      </div>
-
-      <div>
-        <label class="block font-medium text-gray-700" data-lang-key="q_wifi_quality">1. Chất lượng WiFi như thế nào?</label>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="wifi_quality" value="Rất tốt" required class="mr-2"><span data-lang-key="option_very_good">Rất tốt</span></label>
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="wifi_quality" value="Tốt" class="mr-2"><span data-lang-key="option_good">Tốt</span></label>
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="wifi_quality" value="Trung bình" class="mr-2"><span data-lang-key="option_average">Trung bình</span></label>
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="wifi_quality" value="Kém" class="mr-2"><span data-lang-key="option_poor">Kém</span></label>
+                <!-- Đơn đăng ký chi tiết -->
+                <div id="rental-requests-container" class="space-y-8 mb-8"></div>
+                
+                <div class="flex justify-center mb-8">
+                    <button id="add-request-btn" type="button" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 text-md">
+                        + Thêm đơn đăng ký mới
+                        <span class="label-en text-white/90">+ Add new rental request</span>
+                    </button>
+                </div>
+                
+                <div class="flex justify-center">
+                    <button id="submit-form-btn" type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg shadow-xl transition duration-300 text-lg flex items-center gap-2">
+                        <span id="submit-text">
+                            Gửi Yêu Cầu
+                            <span class="label-en text-white/90">Submit Request</span>
+                        </span>
+                        <span id="loading-spinner" class="hidden animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
+                    </button>
+                </div>
+            </form>
         </div>
-      </div>
-      
-      <div>
-        <label class="block font-medium text-gray-700" data-lang-key="q_price">2. Bạn đánh giá thế nào về giá sản phẩm?</label>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="price_rating" value="Rất hợp lý" required class="mr-2"><span data-lang-key="option_very_reasonable">Rất hợp lý</span></label>
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="price_rating" value="Hợp lý" class="mr-2"><span data-lang-key="option_reasonable">Hợp lý</span></label>
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="price_rating" value="Hơi cao" class="mr-2"><span data-lang-key="option_a_bit_high">Hơi cao</span></label>
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="price_rating" value="Cao" class="mr-2"><span data-lang-key="option_high">Cao</span></label>
-        </div>
-      </div>
-      
-      <div>
-        <label class="block font-medium text-gray-700" data-lang-key="q_service_vs_price">3. Chất lượng phục vụ so với giá cả?</label>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="service_vs_price" value="Vượt mong đợi" required class="mr-2"><span data-lang-key="option_exceeds">Vượt mong đợi</span></label>
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="service_vs_price" value="Tương xứng" class="mr-2"><span data-lang-key="option_matches">Tương xứng</span></label>
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="service_vs_price" value="Chưa tương xứng" class="mr-2"><span data-lang-key="option_not_match">Chưa tương xứng</span></label>
-        </div>
-      </div>
-
-      <div>
-        <label class="block font-medium text-gray-700" data-lang-key="q_delivery">4. Nhận/trả thiết bị có thuận tiện không?</label>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="delivery_process" value="Rất thuận tiện" required class="mr-2"><span data-lang-key="option_very_convenient">Rất thuận tiện</span></label>
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="delivery_process" value="Bình thường" class="mr-2"><span data-lang-key="option_normal">Bình thường</span></label>
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="delivery_process" value="Khó khăn" class="mr-2"><span data-lang-key="option_difficult">Khó khăn</span></label>
-        </div>
-      </div>
-
-      <div>
-        <label class="block font-medium text-gray-700" data-lang-key="q_tech_issue">5. Quý khách có gặp sự cố kỹ thuật không?</label>
-        <div class="flex space-x-4 mt-2">
-          <label class="flex items-center cursor-pointer"><input type="radio" name="technical_issue" value="Không" required class="mr-2"><span data-lang-key="option_no">Không</span></label>
-          <label class="flex items-center cursor-pointer"><input type="radio" name="technical_issue" value="Có" class="mr-2"><span data-lang-key="option_yes">Có</span></label>
-        </div>
-      </div>
-
-      <div id="technicalIssuesDetails" class="hidden pl-6 border-l-2 border-blue-200 space-y-3">
-        <label class="block font-medium text-gray-600 text-sm" data-lang-key="tech_issue_prompt">Vui lòng cho biết vấn đề bạn gặp phải:</label>
-        <div class="space-y-2">
-            <label class="flex items-center cursor-pointer"><input type="checkbox" name="issue_detail" value="Tốc độ chậm" class="mr-2"><span data-lang-key="issue_slow">Tốc độ chậm</span></label>
-            <label class="flex items-center cursor-pointer"><input type="checkbox" name="issue_detail" value="Mất kết nối" class="mr-2"><span data-lang-key="issue_disconnect">Mất kết nối thường xuyên</span></label>
-            <label class="flex items-center cursor-pointer"><input type="checkbox" name="issue_detail" value="Không kết nối được" class="mr-2"><span data-lang-key="issue_no_connect">Không kết nối được ban đầu</span></label>
-            <label class="flex items-center cursor-pointer"><input type="checkbox" name="issue_detail" value="Thiết bị không lên nguồn" class="mr-2"><span data-lang-key="issue_no_power">Thiết bị không lên nguồn / Sạc không vào</span></label>
-            <div>
-              <label class="flex items-center cursor-pointer"><input type="checkbox" id="other_issue_checkbox" class="mr-2"><span data-lang-key="issue_other">Khác (vui lòng ghi rõ):</span></label>
-              <textarea name="issue_detail_other" rows="2" class="w-full p-2 border rounded-lg mt-1" data-lang-key="issue_other_placeholder" placeholder="Mô tả sự cố khác..."></textarea>
+    </main>
+    <footer>
+        <div class="footer-company-info">
+            <h2>CÔNG TY TNHH MAYA VIETNAM</h2>
+            <div class="en">MAYA VIETNAM CO., LTD</div>
+            <div class="line">
+                <span class="label">Địa chỉ:</span> Phòng 1630, Tầng 16, DAEHA BUSINESS CENTER, 360 Kim Mã, Ngọc Khánh, Ba Đình, Hà Nội, Việt Nam
+            </div>
+            <div class="line en">
+                <span class="label">Address:</span> Room 1630, 16th Floor, DAEHA BUSINESS CENTER, 360 Kim Ma, Ngoc Khanh, Ba Dinh, Hanoi, Vietnam
+            </div>
+            <div class="line">
+                <span class="label">Hotline:</span> <span style="color:#da1a32;font-weight:bold;">0962 000 650</span> (Tiếng Việt) &nbsp;|&nbsp;
+                <span style="color:#2563eb;font-weight:bold;">0365 399 288</span> (Tiếng Nhật)
+            </div>
+            <div class="line en">
+                <span class="label">Hotline:</span> <span style="color:#da1a32;font-weight:bold;">0962 000 650</span> (Vietnamese) &nbsp;|&nbsp;
+                <span style="color:#2563eb;font-weight:bold;">0365 399 288</span> (Japanese)
             </div>
         </div>
-      </div>
+    </footer>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- CONFIG ---
+        const PACKAGE_LIST = ["500MB/ngày", "1GB/ngày", "Không giới hạn"];
+        const COUNTRY_LIST = typeof PRICE_TABLE !== 'undefined' ? Object.keys(PRICE_TABLE).sort() : [];
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWhgz1DeGxE7VOidlL3i2c5cTtuPJRlJqZQhvlMPi7mHeh8uIBYZuB5RqMSUtXkNUJbA/exec';
 
-      <div>
-        <label class="block font-medium text-gray-700" data-lang-key="q_recommend">6. Quý khách có giới thiệu dịch vụ cho người khác không?</label>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="recommend" value="Chắc chắn có" required class="mr-2"><span data-lang-key="option_recommend_yes">Chắc chắn có</span></label>
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="recommend" value="Có thể" class="mr-2"><span data-lang-key="option_recommend_maybe">Có thể</span></label>
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="recommend" value="Không" class="mr-2"><span data-lang-key="option_recommend_no">Không</span></label>
-        </div>
-      </div>
+        // --- ELEMENTS ---
+        const form = document.getElementById('wifi-form');
+        const container = document.getElementById('rental-requests-container');
+        const addRequestBtn = document.getElementById('add-request-btn');
+        const submitBtn = document.getElementById('submit-form-btn');
+        const submitText = document.getElementById('submit-text');
+        const loadingSpinner = document.getElementById('loading-spinner');
 
-      <div>
-        <label class="block font-medium text-gray-700 text-center mb-2" data-lang-key="q_overall_rating">7. Đánh giá chung về dịch vụ của chúng tôi:</label>
-        <div class="star-rating">
-          <input type="radio" id="star5" name="rating" value="5" required/><label for="star5" title="5 sao">★</label>
-          <input type="radio" id="star4" name="rating" value="4"/><label for="star4" title="4 sao">★</label>
-          <input type="radio" id="star3" name="rating" value="3"/><label for="star3" title="3 sao">★</label>
-          <input type="radio" id="star2" name="rating" value="2"/><label for="star2" title="2 sao">★</label>
-          <input type="radio" id="star1" name="rating" value="1"/><label for="star1" title="1 sao">★</label>
-        </div>
-      </div>
-      
-      <div>
-        <label class="block font-medium text-gray-700" data-lang-key="q_channel">8. Quý khách biết đến dịch vụ của chúng tôi qua kênh nào?</label>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="channel" value="Facebook" required class="mr-2"><span data-lang-key="option_channel_facebook">Facebook</span></label>
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="channel" value="Google" class="mr-2"><span data-lang-key="option_channel_google">Google</span></label>
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="channel" value="Bạn bè giới thiệu" class="mr-2"><span data-lang-key="option_channel_friends">Bạn bè giới thiệu</span></label>
-          <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"><input type="radio" name="channel" value="Khác" class="mr-2"><span data-lang-key="option_channel_other">Khác</span></label>
-        </div>
-      </div>
-      
-      <div>
-        <label class="block font-medium text-gray-700" data-lang-key="q_comment">9. Góp ý thêm (nếu có):</label>
-        <textarea name="comment" rows="4" class="w-full p-3 border rounded-lg mt-2" data-lang-key="comment_placeholder" placeholder="Ý kiến của bạn..."></textarea>
-      </div>
+        let requestCounter = 0;
 
-      <!-- HỘP RECAPTCHA -->
-      <div class="g-recaptcha" data-sitekey="YOUR_RECAPTCHA_SITE_KEY"></div>
-      <!-- ^^^ THAY THẾ YOUR_RECAPTCHA_SITE_KEY BẰNG KHÓA CỦA BẠN -->
+        // --- HELPERS ---
+        const currency = (val) => val ? Number(val).toLocaleString("vi-VN") + " VND" : "-";
+        
+        const calcDays = (from, to) => {
+            if (!from || !to) return 1;
+            // Parse dates as UTC to avoid timezone issues
+            const d1 = new Date(from + 'T00:00:00Z');
+            const d2 = new Date(to + 'T00:00:00Z');
+            const ms = d2.getTime() - d1.getTime();
+            if (ms < 0) return 1;
+            return Math.round(ms / 86400000) + 1;
+        };
 
-      <div class="text-center pt-4">
-        <button type="submit" id="submitButton" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold text-lg" data-lang-key="submit_button">
-          Gửi phản hồi
-        </button>
-      </div>
+        const calcPrice = (country, pkg, days) => {
+            if (!PRICE_TABLE[country] || !PACKAGE_LIST.includes(pkg) || !days) return null;
+            const unit = PRICE_TABLE[country][pkg];
+            if (!unit) return null;
+            const total = unit * days;
+            const vat = Math.round(total * 0.1);
+            const grandTotal = total + vat;
+            return { days, total, unitPrice: unit, vat, grandTotal };
+        };
 
-      <p id="status" class="text-center font-medium h-6"></p>
-    </form>
-  </div>
+        const createCountrySelect = (id) => {
+            let html = `<select id="${id}" class="choices-country w-full" required><option value="">-- Chọn quốc gia --</option>`;
+            html += COUNTRY_LIST.map(c => `<option value="${c}">${c}</option>`).join('');
+            html += `</select>`;
+            return html;
+        };
 
-  <footer class="bg-white text-gray-600 text-sm mt-8 py-6">
-    <div class="max-w-4xl mx-auto px-4">
-        <div class="text-center mb-4">
-            <h3 class="font-bold text-gray-800">CÔNG TY TNHH MAYA VIỆT NAM</h3>
-            <p class="text-xs text-gray-500">MAYA VIETNAM COMPANY LIMITED</p>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-center md:text-left">
-            <div>
-                <h4 class="font-semibold text-gray-700 mb-1" data-lang-key="footer_address">Địa chỉ</h4>
-                <p>Phòng 1630, tầng 16, tòa nhà Daeha Business Center, 360 Kim Mã, P. Ngọc Khánh, Q. Ba Đình, Hà Nội</p>
-                <p class="text-xs text-gray-500">Room 1630, 16th floor, Daeha Business Center, 360 Kim Ma, Ngoc Khanh Ward, Ba Dinh Dist., Hanoi</p>
-            </div>
-            <div>
-                <h4 class="font-semibold text-gray-700 mb-1" data-lang-key="footer_hotline">Hotline</h4>
-                <p><i class="fas fa-phone-alt mr-2"></i>0962 000 650 (<span data-lang-key="lang_vi">Tiếng Việt</span>)</p>
-                <p><i class="fas fa-phone-alt mr-2"></i>0365 399 288 (<span data-lang-key="lang_ja">Tiếng Nhật</span>)</p>
-            </div>
-        </div>
-    </div>
-  </footer>
+        const createPackageSelect = (id) => `
+            <select id="${id}" class="package-select w-full px-4 py-2 border border-blue-300 rounded-lg text-blue-900" required>
+                <option value="">-- Chọn gói data --</option>
+                <option value=500MB/ngày">500MB/ngày / 500MB/day</option>
+                <option value="1GB/ngày">1GB/ngày / 1GB/day</option>
+                <option value="Không giới hạn">Không giới hạn / Unlimited</option>
+                
+            </select>`;
 
-  <script>
-    // --- DICTIONARY FOR LANGUAGES (No changes here) ---
-    const translations = {
-      vi: {
-        title: "Khảo sát mức độ hài lòng",
-        subtitle: "Cảm ơn quý khách đã sử dụng dịch vụ cho thuê WiFi của chúng tôi!",
-        email_label: "Email của bạn",
-        email_placeholder: "vidu@email.com",
-        usage_area_label: "Quý khách đã sử dụng dịch vụ tại quốc gia nào?",
-        usage_area_placeholder: "Ví dụ: Nhật Bản, Hàn Quốc...",
-        q_wifi_quality: "1. Chất lượng WiFi như thế nào?",
-        option_very_good: "Rất tốt",
-        option_good: "Tốt",
-        option_average: "Trung bình",
-        option_poor: "Kém",
-        q_price: "2. Bạn đánh giá thế nào về giá sản phẩm?",
-        option_very_reasonable: "Rất hợp lý",
-        option_reasonable: "Hợp lý",
-        option_a_bit_high: "Hơi cao",
-        option_high: "Cao",
-        q_service_vs_price: "3. Chất lượng phục vụ so với giá cả?",
-        option_exceeds: "Vượt mong đợi",
-        option_matches: "Tương xứng",
-        option_not_match: "Chưa tương xứng",
-        q_delivery: "4. Nhận/trả thiết bị có thuận tiện không?",
-        option_very_convenient: "Rất thuận tiện",
-        option_normal: "Bình thường",
-        option_difficult: "Khó khăn",
-        q_tech_issue: "5. Quý khách có gặp sự cố kỹ thuật không?",
-        option_no: "Không",
-        option_yes: "Có",
-        tech_issue_prompt: "Vui lòng cho biết vấn đề bạn gặp phải (có thể chọn nhiều):",
-        issue_slow: "Tốc độ chậm",
-        issue_disconnect: "Mất kết nối thường xuyên",
-        issue_no_connect: "Không kết nối được ban đầu",
-        issue_no_power: "Thiết bị không lên nguồn / Sạc không vào",
-        issue_other: "Khác (vui lòng ghi rõ):",
-        issue_other_placeholder: "Mô tả sự cố khác...",
-        q_recommend: "6. Quý khách có giới thiệu dịch vụ cho người khác không?",
-        option_recommend_yes: "Chắc chắn có",
-        option_recommend_maybe: "Có thể",
-        option_recommend_no: "Không",
-        q_overall_rating: "7. Đánh giá chung về dịch vụ của chúng tôi:",
-        q_channel: "8. Quý khách biết đến dịch vụ của chúng tôi qua kênh nào?",
-        option_channel_facebook: "Facebook",
-        option_channel_google: "Google",
-        option_channel_friends: "Bạn bè giới thiệu",
-        option_channel_other: "Khác",
-        q_comment: "9. Góp ý thêm (nếu có):",
-        comment_placeholder: "Ý kiến của bạn...",
-        submit_button: "Gửi phản hồi",
-        footer_address: "Địa chỉ",
-        footer_hotline: "Hotline",
-        lang_vi: "Tiếng Việt",
-        lang_ja: "Tiếng Nhật",
-        status_sending: "⏳ Đang gửi phản hồi...",
-        status_success: "🎉 Cảm ơn bạn đã gửi phản hồi! Vui lòng kiểm tra email xác nhận.",
-        status_fail: "❌ Gửi phản hồi thất bại. Vui lòng thử lại.",
-        recaptcha_fail: "Vui lòng hoàn thành xác minh reCAPTCHA.",
-      },
-      en: {
-        title: "Satisfaction Survey",
-        subtitle: "Thank you for using our WiFi rental service!",
-        email_label: "Your Email",
-        email_placeholder: "example@email.com",
-        usage_area_label: "In which country did you use the service?",
-        usage_area_placeholder: "E.g., Japan, South Korea...",
-        q_wifi_quality: "1. How was the WiFi quality?",
-        option_very_good: "Very Good",
-        option_good: "Good",
-        option_average: "Average",
-        option_poor: "Poor",
-        q_price: "2. How do you rate the product price?",
-        option_very_reasonable: "Very Reasonable",
-        option_reasonable: "Reasonable",
-        option_a_bit_high: "A bit high",
-        option_high: "High",
-        q_service_vs_price: "3. Service quality compared to the price?",
-        option_exceeds: "Exceeded expectations",
-        option_matches: "Matches expectations",
-        option_not_match: "Did not meet expectations",
-        q_delivery: "4. Was the device pickup/return process convenient?",
-        option_very_convenient: "Very Convenient",
-        option_normal: "Normal",
-        option_difficult: "Difficult",
-        q_tech_issue: "5. Did you experience any technical issues?",
-        option_no: "No",
-        option_yes: "Yes",
-        tech_issue_prompt: "Please specify the issue(s) you faced (multiple selections possible):",
-        issue_slow: "Slow speed",
-        issue_disconnect: "Frequent disconnection",
-        issue_no_connect: "Couldn't connect initially",
-        issue_no_power: "Device won't turn on / Not charging",
-        issue_other: "Other (please specify):",
-        issue_other_placeholder: "Describe the other issue...",
-        q_recommend: "6. Would you recommend our service to others?",
-        option_recommend_yes: "Definitely Yes",
-        option_recommend_maybe: "Maybe",
-        option_recommend_no: "No",
-        q_overall_rating: "7. Your overall rating of our service:",
-        q_channel: "8. How did you hear about our service?",
-        option_channel_facebook: "Facebook",
-        option_channel_google: "Google",
-        option_channel_friends: "Friend referral",
-        option_channel_other: "Other",
-        q_comment: "9. Any additional comments?",
-        comment_placeholder: "Your feedback...",
-        submit_button: "Submit Feedback",
-        footer_address: "Address",
-        footer_hotline: "Hotline",
-        lang_vi: "Vietnamese",
-        lang_ja: "Japanese",
-        status_sending: "⏳ Sending feedback...",
-        status_success: "🎉 Thank you for your feedback! Please check your email for a confirmation.",
-        status_fail: "❌ Failed to send feedback. Please try again.",
-        recaptcha_fail: "Please complete the reCAPTCHA verification.",
-      },
-      ja: {
-        title: "満足度アンケート",
-        subtitle: "WiFiレンタルサービスをご利用いただき、誠にありがとうございます！",
-        email_label: "メールアドレス",
-        email_placeholder: "example@email.com",
-        usage_area_label: "どちらの国でサービスを利用しましたか？",
-        usage_area_placeholder: "例：日本、韓国など",
-        q_wifi_quality: "1. WiFiの品質はいかがでしたか？",
-        option_very_good: "非常に良い",
-        option_good: "良い",
-        option_average: "普通",
-        option_poor: "悪い",
-        q_price: "2. 製品価格についてどう思いますか？",
-        option_very_reasonable: "非常に手頃",
-        option_reasonable: "手頃",
-        option_a_bit_high: "少し高い",
-        option_high: "高い",
-        q_service_vs_price: "3. 価格に対するサービスの質は？",
-        option_exceeds: "期待以上",
-        option_matches: "期待通り",
-        option_not_match: "期待以下",
-        q_delivery: "4. 端末の受け取り・返却は便利でしたか？",
-        option_very_convenient: "非常に便利",
-        option_normal: "普通",
-        option_difficult: "不便",
-        q_tech_issue: "5. 技術的な問題はありましたか？",
-        option_no: "いいえ",
-        option_yes: "はい",
-        tech_issue_prompt: "発生した問題を選択してください（複数選択可）：",
-        issue_slow: "速度が遅い",
-        issue_disconnect: "頻繁に切断される",
-        issue_no_connect: "最初に接続できなかった",
-        issue_no_power: "電源が入らない・充電できない",
-        issue_other: "その他（具体的にご記入ください）：",
-        issue_other_placeholder: "その他の問題について説明してください...",
-        q_recommend: "6. 私たちのサービスを他の人に勧めますか？",
-        option_recommend_yes: "ぜひ勧めたい",
-        option_recommend_maybe: "多分",
-        option_recommend_no: "勧めない",
-        q_overall_rating: "7. 当社サービスの総合評価：",
-        q_channel: "8. どのようして私たちのサービスを知りましたか？",
-        option_channel_facebook: "フェイスブック",
-        option_channel_google: "グーグル",
-        option_channel_friends: "友人からの紹介",
-        option_channel_other: "その他",
-        q_comment: "9. その他のご意見・ご感想:",
-        comment_placeholder: "ご意見をお聞かせください...",
-        submit_button: "送信する",
-        footer_address: "住所",
-        footer_hotline: "ホットライン",
-        lang_vi: "ベトナム語",
-        lang_ja: "日本語",
-        status_sending: "⏳ フィードバックを送信中...",
-        status_success: "🎉 ご意見ありがとうございます！確認メールをご確認ください。",
-        status_fail: "❌ 送信に失敗しました。もう一度お試しください。",
-        recaptcha_fail: "reCAPTCHA認証を完了してください。",
-      }
-    };
+        // --- CORE LOGIC ---
+        function updatePriceForSection(section) {
+            const country = section.querySelector('.choices-country').value;
+            const pkg = section.querySelector('.package-select').value;
+            const from = section.querySelector('.date-from').value;
+            const to = section.querySelector('.date-to').value;
+            const daysInput = section.querySelector('.days-input');
+            const priceInfo = section.querySelector('.price-info');
 
-    // --- LANGUAGE SWITCHER LOGIC ---
-    const setLanguage = (lang) => {
-      document.documentElement.lang = lang;
-      localStorage.setItem('language', lang);
-      
-      document.querySelectorAll('[data-lang-key]').forEach(el => {
-        const key = el.getAttribute('data-lang-key');
-        if (translations[lang][key]) {
-          if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-            el.placeholder = translations[lang][key];
-          } else {
-            el.innerText = translations[lang][key];
-          }
+            const days = calcDays(from, to);
+            daysInput.value = days;
+            
+            const result = calcPrice(country, pkg, days);
+            
+            if (!country || !pkg || !from || !to) {
+                priceInfo.innerHTML = '';
+                return;
+            }
+
+            if (result && result.unitPrice) {
+                priceInfo.innerHTML = `<span class="price-info-highlight">
+                    Đơn giá: ${currency(result.unitPrice)} x ${days} ngày = ${currency(result.total)}<br>
+                    VAT (10%): ${currency(result.vat)}<br>
+                    <span style="color:#2563eb;">Tổng cộng: ${currency(result.grandTotal)}</span>
+                </span>`;
+            } else {
+                priceInfo.innerHTML = '<span class="text-red-700 font-semibold">Chưa có giá cho lựa chọn này.</span>';
+            }
         }
-      });
-
-      document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
-      document.getElementById(`lang-${lang}`).classList.add('active');
-    };
-
-    document.getElementById('lang-vi').addEventListener('click', () => setLanguage('vi'));
-    document.getElementById('lang-en').addEventListener('click', () => setLanguage('en'));
-    document.getElementById('lang-ja').addEventListener('click', () => setLanguage('ja'));
-    
-    const savedLang = localStorage.getItem('language') || 'vi';
-    setLanguage(savedLang);
-
-
-    // --- FORM LOGIC ---
-    const form = document.getElementById("feedbackForm");
-    const status = document.getElementById("status");
-    const submitButton = document.getElementById("submitButton");
-
-    const technicalIssueRadios = document.querySelectorAll('input[name="technical_issue"]');
-    const technicalIssuesDetails = document.getElementById('technicalIssuesDetails');
-    technicalIssueRadios.forEach(radio => {
-      radio.addEventListener('change', function() {
-        if (this.value === 'Có') {
-          technicalIssuesDetails.classList.remove('hidden');
-        } else {
-          technicalIssuesDetails.classList.add('hidden');
+        
+        function updateSectionNumbers() {
+            const sections = container.querySelectorAll('section.rental-request');
+            sections.forEach((section, idx) => {
+                const n = idx + 1;
+                section.dataset.requestNumber = n;
+                section.querySelector('h2.request-title').innerHTML = `Đơn ${n} <span class="label-en">Request ${n}</span>`;
+                // Show remove button for all but the first section
+                const removeBtn = section.querySelector('.remove-request-btn');
+                if (removeBtn) removeBtn.style.display = sections.length > 1 ? 'inline-block' : 'none';
+            });
+            requestCounter = sections.length;
         }
-      });
-    });
-    
-    const otherIssueText = document.querySelector('textarea[name="issue_detail_other"]');
-    const otherIssueCheckbox = document.getElementById('other_issue_checkbox');
-    otherIssueText.addEventListener('input', function() {
-        if(this.value.trim() !== '') { otherIssueCheckbox.checked = true; }
-    });
 
+        function createRentalRequestSection() {
+            requestCounter++;
+            const n = requestCounter;
+            const section = document.createElement('section');
+            section.className = 'rental-request bg-blue-50 p-6 rounded-lg shadow-sm border border-blue-200';
+            section.dataset.requestNumber = n;
 
-    form.addEventListener("submit", function(e) {
-      e.preventDefault();
-      const lang = localStorage.getItem('language') || 'vi';
-      
-      const recaptchaResponse = grecaptcha.getResponse();
-      if (recaptchaResponse.length === 0) {
-        status.innerText = translations[lang].recaptcha_fail;
-        status.className = "text-center font-medium h-6 text-red-600";
-        return;
-      }
-      
-      status.innerText = translations[lang].status_sending;
-      status.className = "text-center font-medium h-6 text-blue-600";
-      submitButton.disabled = true;
+            section.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="request-title text-xl font-bold text-blue-800">Đơn ${n} <span class="label-en">Request ${n}</span></h2>
+                    <button type="button" class="remove-request-btn text-red-500 hover:text-red-700 font-semibold text-sm" title="Xóa đơn này">Xóa <span class="label-en text-red-400">Remove</span></button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-blue-800 text-sm font-semibold mb-2">Tên người dùng <span class="label-en">User Name</span></label>
+                        <input type="text" class="user-name-input w-full px-4 py-2 border border-blue-300 rounded-lg text-blue-900" required>
+                    </div>
+                    <div>
+                        <label class="block text-blue-800 text-sm font-semibold mb-2">IMEI <span class="label-en">IMEI</span></label>
+                        <input type="text" class="imei-input w-full px-4 py-2 border border-blue-300 rounded-lg text-blue-900" required>
+                    </div>
+                    <div>
+                        <label class="block text-blue-800 text-sm font-semibold mb-2">Từ ngày <span class="label-en">From date</span></label>
+                        <input type="date" class="date-from w-full px-4 py-2 border border-blue-300 rounded-lg text-blue-900" required>
+                    </div>
+                    <div>
+                        <label class="block text-blue-800 text-sm font-semibold mb-2">Đến ngày <span class="label-en">To date</span></label>
+                        <input type="date" class="date-to w-full px-4 py-2 border border-blue-300 rounded-lg text-blue-900" required>
+                    </div>
+                    <div>
+                        <label class="block text-blue-800 text-sm font-semibold mb-2">Số ngày sử dụng <span class="label-en">Usage days</span></label>
+                        <input type="number" class="days-input w-full px-4 py-2 border border-blue-300 rounded-lg text-blue-900 bg-gray-100" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-blue-800 text-sm font-semibold mb-2">Quốc gia <span class="label-en">Country</span></label>
+                        ${createCountrySelect(`country-${n}`)}
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-blue-800 text-sm font-semibold mb-2">Gói data <span class="label-en">Data Package</span></label>
+                        ${createPackageSelect(`data-package-${n}`)}
+                    </div>
+                    <div class="price-info col-span-1 md:col-span-2 mt-2 text-blue-900 font-semibold"></div>
+                    <div class="col-span-1 md:col-span-2">
+                        <label class="block text-blue-800 text-sm font-semibold mb-2">Mã Thanh Toán <span class="label-en">Budget Code</span></label>
+                        <input type="text" class="budget-code-input w-full px-4 py-2 border border-blue-300 rounded-lg text-blue-900">
+                    </div>
+                </div>`;
+            
+            container.appendChild(section);
+            
+            // Initialize Choices.js for the new select
+            new Choices(section.querySelector('.choices-country'), { 
+                searchEnabled: true, 
+                shouldSort: false, // Already sorted
+                itemSelectText: 'Chọn' 
+            });
 
-      const formData = new FormData(form);
-      const data = {};
-      
-      formData.forEach((value, key) => { data[key] = value; });
-      
-      const issueDetails = [];
-      document.querySelectorAll('input[name="issue_detail"]:checked').forEach(checkbox => {
-        issueDetails.push(checkbox.value);
-      });
-      const otherDetail = formData.get('issue_detail_other');
-      if (otherDetail && otherDetail.trim() !== '' && otherIssueCheckbox.checked) {
-        issueDetails.push(`Khác: ${otherDetail.trim()}`);
-      }
-      data['technical_issue_details'] = issueDetails.join('; ');
-      data['language'] = lang;
-      data['g-recaptcha-response'] = recaptchaResponse;
-
-      // *** IMPORTANT: REPLACE WITH YOUR GOOGLE APPS SCRIPT URL ***
-      const url = "https://script.google.com/macros/s/AKfycbylHCes-0UOFDJ6ZOu7-qYCE_5szKSNQ3AxaZXzpC2n7ghX5Y5sAXQjwI23PjKWBSw/exec";
-
-      fetch(url, {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" },
-      })
-      .then(response => response.json())
-      .then(res => {
-        if (res.result === 'success') {
-          form.reset();
-          technicalIssuesDetails.classList.add('hidden');
-          status.innerText = translations[lang].status_success;
-          status.className = "text-center font-medium h-6 text-green-600";
-          document.querySelectorAll('.star-rating input[type="radio"]').forEach(radio => radio.checked = false);
-          setLanguage(lang);
-        } else {
-          throw new Error(res.message || 'Unknown error occurred.');
+            updateSectionNumbers();
         }
-      })
-      .catch(err => {
-          status.innerText = translations[lang].status_fail;
-          status.className = "text-center font-medium h-6 text-red-600";
-          console.error(err);
-      })
-      .finally(() => {
-          grecaptcha.reset();
-          submitButton.disabled = false;
-      });
+
+        // --- EVENT LISTENERS ---
+        addRequestBtn.addEventListener('click', createRentalRequestSection);
+        
+        // Event Delegation for price calculation and removal
+        container.addEventListener('change', (e) => {
+            if (e.target.matches('.choices-country, .package-select, .date-from, .date-to')) {
+                const section = e.target.closest('section.rental-request');
+                if (section) {
+                    updatePriceForSection(section);
+                }
+            }
+        });
+
+        container.addEventListener('click', (e) => {
+            if (e.target.matches('.remove-request-btn, .remove-request-btn *')) {
+                const section = e.target.closest('section.rental-request');
+                if (section) {
+                    // Properly destroy Choices instance before removing element
+                    const choicesInstance = section.querySelector('.choices-country').choices;
+                    if (choicesInstance) {
+                        choicesInstance.destroy();
+                    }
+                    section.remove();
+                    updateSectionNumbers();
+                }
+            }
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // --- UI state: start loading ---
+            submitBtn.disabled = true;
+            loadingSpinner.classList.remove('hidden');
+            submitText.style.opacity = 0.5;
+
+            // --- Collect Sender Info ---
+            const senderInfo = {
+                name: document.getElementById('sender-name').value.trim(),
+                email: document.getElementById('sender-email').value.trim(),
+                phone: document.getElementById('sender-phone').value.trim(),
+                company: document.getElementById('sender-company').value.trim(),
+                region: document.getElementById('sender-region').value.trim(),
+                taxCode: document.getElementById('sender-taxcode').value.trim()
+            };
+
+            // --- Validation ---
+            if (!senderInfo.name || !senderInfo.email || !senderInfo.phone) {
+                Swal.fire("Thiếu thông tin", "Vui lòng nhập đủ Họ tên, Email và Số điện thoại của người gửi.", "warning");
+                setSubmitState(true); // Re-enable form
+                return;
+            }
+
+            // --- Collect Rental Requests ---
+            const rentalRequests = [];
+            let isFormValid = true;
+            const sections = container.querySelectorAll('section.rental-request');
+
+            if (sections.length === 0) {
+                 Swal.fire("Chưa có đơn", "Vui lòng thêm ít nhất một đơn đăng ký.", "warning");
+                 setSubmitState(true);
+                 return;
+            }
+
+            sections.forEach(section => {
+                const country = section.querySelector('.choices-country').value;
+                const pkg = section.querySelector('.package-select').value;
+                const from = section.querySelector('.date-from').value;
+                const to = section.querySelector('.date-to').value;
+                const days = calcDays(from, to);
+                const price = calcPrice(country, pkg, days);
+
+                const request = {
+                    requestNumber: section.dataset.requestNumber,
+                    userName: section.querySelector('.user-name-input').value.trim(),
+                    imei: section.querySelector('.imei-input').value.trim(),
+                    fromDate: from,
+                    toDate: to,
+                    days: days,
+                    country: country,
+                    dataPackage: pkg,
+                    budgetCode: section.querySelector('.budget-code-input').value.trim(),
+                    unitPrice: price ? price.unitPrice : "",
+                    total: price ? price.total : "",
+                    vat: price ? price.vat : "",
+                    grandTotal: price ? price.grandTotal : ""
+                };
+
+                if (!request.userName || !request.imei || !request.fromDate || !request.toDate || !request.country || !request.dataPackage) {
+                    isFormValid = false;
+                }
+                rentalRequests.push(request);
+            });
+
+            if (!isFormValid) {
+                Swal.fire("Thiếu thông tin", "Vui lòng điền đầy đủ thông tin cho tất cả các đơn đăng ký.", "warning");
+                setSubmitState(true);
+                return;
+            }
+
+            // --- Prepare and Send Payload ---
+            const payload = {
+                globalSenderInfo: senderInfo,
+                rentalRequests,
+                submissionTime: new Date().toISOString()
+            };
+            
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Important for sending to Google Apps Script
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                // Because of 'no-cors' mode, we won't get a real response back.
+                // We assume success if the request doesn't throw an error.
+                Swal.fire("Thành công!", "Đơn đăng ký đã được gửi đi.<br>Vui lòng kiểm tra email để xem báo giá chi tiết.", "success");
+                form.reset();
+                container.innerHTML = ''; // Clear all requests
+                createRentalRequestSection(); // Add a fresh one
+                
+            } catch (err) {
+                Swal.fire("Lỗi", "Không thể gửi đơn đăng ký. Vui lòng kiểm tra kết nối mạng và thử lại.", "error");
+            } finally {
+                setSubmitState(true); // Re-enable form in all cases
+            }
+        });
+        
+        const setSubmitState = (enabled) => {
+            submitBtn.disabled = !enabled;
+            loadingSpinner.classList.toggle('hidden', enabled);
+            submitText.style.opacity = enabled ? 1 : 0.5;
+        };
+
+        // --- INITIALIZE ---
+        createRentalRequestSection();
     });
-  </script>
+    </script>
 </body>
 </html>
