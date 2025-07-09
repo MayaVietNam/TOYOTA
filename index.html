@@ -8,7 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-    <!-- Nhớ đặt file price-table.js cùng thư mục -->
     <script src="price-table.js"></script>
     <style>
         html, body { height: 100%; margin: 0; padding: 0; min-height: 100vh; }
@@ -57,6 +56,34 @@
         .footer-company-info .en { color: #2563eb; font-weight: 500; font-size: 0.98em; margin-bottom: 0.2em; letter-spacing: 0.01em; }
         .footer-company-info .line { font-size: 1em; margin-bottom: 2px;}
         .footer-company-info .label { font-weight: 600; }
+
+        /* Styles for Banners */
+        .banner-left, .banner-right {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            display: none; /* Ẩn theo mặc định cho thiết bị di động */
+        }
+        .banner-left {
+            left: 200px;
+        }
+        .banner-right {
+            right: 200px;
+        }
+        .banner-left img, .banner-right img {
+            width: 300px; /* Điều chỉnh kích thước theo nhu cầu */
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        @media (min-width: 1200px) { /* Hiển thị biểu ngữ trên màn hình lớn hơn */
+            .banner-left, .banner-right {
+                display: block;
+            }
+        }
+
         @media (max-width: 520px) {
             .form-container, .footer-company-info { padding: 1.25rem !important; border-radius: 8px; }
             .footer-company-info { font-size: 0.89em; }
@@ -65,6 +92,18 @@
 </head>
 <body class="p-4 sm:p-8">
     <div class="bg-logo-bg"><div class="bg-logo-bg-inner"></div></div>
+
+    <div class="banner-left">
+        <a href="https://global-ez.com/" target="_blank">
+            <img src="https://i.postimg.cc/wBQkK8WG/Portal-Tech-Co.gif" alt="Left Advertisement">
+        </a>
+    </div>
+    <div class="banner-right">
+        <a href="https://global-ez.com/" target="_blank">
+            <img src="https://i.postimg.cc/7bvfKbyJ/Modern-Fashion-Sale-Retractable-Banner.png" alt="Right Advertisement">
+        </a>
+    </div>
+
     <div class="logo-on-top">
         <img src="https://i.postimg.cc/VvSyGkBV/EZ-LOGO-08.png" alt="EZ Maya Logo">
     </div>
@@ -76,7 +115,6 @@
                 <span class="text-lg font-bold label-en uppercase">WIFI DEVICE RENTAL REGISTRATION FORM</span>
             </h1>
             <form id="wifi-form" autocomplete="on" novalidate>
-                <!-- Thông tin người gửi -->
                 <div class="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-blue-800 text-sm font-semibold mb-2">
@@ -120,7 +158,6 @@
                     </div>
                 </div>
 
-                <!-- Đơn đăng ký chi tiết -->
                 <div id="rental-requests-container" class="space-y-8 mb-8"></div>
                 
                 <div class="flex justify-center mb-8">
@@ -167,7 +204,10 @@
         // --- CONFIG ---
         const PACKAGE_LIST = ["500MB/ngày", "1GB/ngày", "Không giới hạn"];
         const COUNTRY_LIST = typeof PRICE_TABLE !== 'undefined' ? Object.keys(PRICE_TABLE).sort() : [];
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhiEQwBXfKEmvzaDdo5exS0ssCh81xeUlgjE3gckfOumgCGRZt8Q7za9Q25XO1B5iETg/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzI7cFpMrgndZ0e2QNQctclgnhMU_8cIgGaZDjzeWxs9Kpj6f3TQiawcVUBPDMNDfhg/exec';
+
+        // KHÔNG CẦN đối tượng DISTRICTS vì chức năng quận/huyện đã bị loại bỏ.
+        // const DISTRICTS = { ... };
 
         // --- ELEMENTS ---
         const form = document.getElementById('wifi-form');
@@ -176,6 +216,11 @@
         const submitBtn = document.getElementById('submit-form-btn');
         const submitText = document.getElementById('submit-text');
         const loadingSpinner = document.getElementById('loading-spinner');
+        const senderRegionSelect = document.getElementById('sender-region');
+        // Các phần tử liên quan đến quận/huyện đã bị loại bỏ:
+        // const senderDistrictGroup = document.getElementById('sender-district-group');
+        // const senderDistrictSelect = document.getElementById('sender-district');
+
 
         let requestCounter = 0;
 
@@ -212,11 +257,13 @@
         const createPackageSelect = (id) => `
             <select id="${id}" class="package-select w-full px-4 py-2 border border-blue-300 rounded-lg text-blue-900" required>
                 <option value="">-- Chọn gói data --</option>
-                <option value=500MB/ngày">500MB/ngày / 500MB/day</option>
+                <option value="500MB/ngày">500MB/ngày / 500MB/day</option>
                 <option value="1GB/ngày">1GB/ngày / 1GB/day</option>
                 <option value="Không giới hạn">Không giới hạn / Unlimited</option>
-                
             </select>`;
+
+        // Hàm populateDistricts đã bị loại bỏ vì không cần chức năng quận/huyện.
+        // const populateDistricts = () => { ... };
 
         // --- CORE LOGIC ---
         function updatePriceForSection(section) {
@@ -225,7 +272,8 @@
             const from = section.querySelector('.date-from').value;
             const to = section.querySelector('.date-to').value;
             const daysInput = section.querySelector('.days-input');
-            const priceInfo = section.querySelector('.price-info');
+
+            const priceInfo = section.querySelector('.price-info'); // Di chuyển dòng này vào đây
 
             const days = calcDays(from, to);
             daysInput.value = days;
@@ -349,6 +397,9 @@
             }
         });
 
+        // Hàm populateDistricts() đã bị loại bỏ nên không cần event listener này.
+        // senderRegionSelect.addEventListener('change', populateDistricts);
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -363,13 +414,16 @@
                 email: document.getElementById('sender-email').value.trim(),
                 phone: document.getElementById('sender-phone').value.trim(),
                 company: document.getElementById('sender-company').value.trim(),
-                region: document.getElementById('sender-region').value.trim(),
+                region: senderRegionSelect.value.trim(),
+                // Không cần trường district nữa
+                // district: senderDistrictSelect.value.trim(), 
                 taxCode: document.getElementById('sender-taxcode').value.trim()
             };
 
             // --- Validation ---
-            if (!senderInfo.name || !senderInfo.email || !senderInfo.phone) {
-                Swal.fire("Thiếu thông tin", "Vui lòng nhập đủ Họ tên, Email và Số điện thoại của người gửi.", "warning");
+            // Loại bỏ kiểm tra district khỏi điều kiện validation
+            if (!senderInfo.name || !senderInfo.email || !senderInfo.phone || !senderInfo.region) {
+                Swal.fire("Thiếu thông tin", "Vui lòng nhập đủ Họ tên, Email, Số điện thoại và Khu vực của người gửi.", "warning");
                 setSubmitState(true); // Re-enable form
                 return;
             }
@@ -443,6 +497,7 @@
                 form.reset();
                 container.innerHTML = ''; // Clear all requests
                 createRentalRequestSection(); // Add a fresh one
+                // Không cần gọi populateDistricts() nữa
                 
             } catch (err) {
                 Swal.fire("Lỗi", "Không thể gửi đơn đăng ký. Vui lòng kiểm tra kết nối mạng và thử lại.", "error");
@@ -459,6 +514,7 @@
 
         // --- INITIALIZE ---
         createRentalRequestSection();
+        // Không cần gọi populateDistricts() khi khởi tạo
     });
     </script>
 </body>
